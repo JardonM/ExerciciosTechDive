@@ -1,3 +1,5 @@
+package Ex1;
+
 import java.time.LocalDateTime;
 
 public class Main {
