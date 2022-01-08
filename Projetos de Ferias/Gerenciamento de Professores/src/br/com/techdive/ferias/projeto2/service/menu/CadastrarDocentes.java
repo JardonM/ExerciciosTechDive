@@ -10,7 +10,7 @@ public class CadastrarDocentes {
         String nome = "";
         System.out.println("---- CADASTRO DE DOCENTES ----");
         do{
-            nome = lerTeclado.lerString("Nome do Docente: ");
+            nome = lerTeclado.lerString("Nome completo do Docente: ");
         }while (nome.isEmpty() || nome.isBlank());
         return new Docente(nome);
     }
