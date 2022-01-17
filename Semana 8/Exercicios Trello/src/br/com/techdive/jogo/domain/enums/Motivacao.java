@@ -1,4 +1,4 @@
-package br.com.techdive.jogo.domain;
+package br.com.techdive.jogo.domain.enums;
 
 public enum Motivacao {
     VINGANCA("Vincanca"),
