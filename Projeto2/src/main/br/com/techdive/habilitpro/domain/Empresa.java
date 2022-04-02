@@ -25,6 +25,6 @@ public class Empresa {
 
     private Optional<List<String>> nomeFiliais;
 
-    private List<Trilha> trilhas;
+x
 
 }
