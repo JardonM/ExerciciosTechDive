@@ -7,6 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import representation.request.TrabalhadorRequestRepresentation;
 
+import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
@@ -24,15 +25,16 @@ public class TrabalhadorService {
     private final FuncaoRepository funcaoRepository;
     private final SetorRepository setorRepository;
     private final HistoricoFuncaoRepository historicoFuncaoRepository;
+    private EntityManager entityManager;
 
-    public TrabalhadorService(TrabalhadorRepository trabalhadorRepository, EmpresaService empresaService, TrilhaRepository trilhaRepository,
-                              FuncaoRepository funcaoRepository, SetorRepository setorRepository, HistoricoFuncaoRepository historicoFuncaoRepository) {
-        this.trabalhadorRepository = trabalhadorRepository;
-        this.empresaService = empresaService;
-        this.trilhaRepository = trilhaRepository;
-        this.funcaoRepository = funcaoRepository;
-        this.setorRepository = setorRepository;
-        this.historicoFuncaoRepository = historicoFuncaoRepository;
+    public TrabalhadorService(EntityManager entityManager) {
+        this.trabalhadorRepository = new TrabalhadorRepository(entityManager);
+        this.empresaService = new EmpresaService(entityManager);
+        this.trilhaRepository = new TrilhaRepository(entityManager);
+        this.funcaoRepository = new FuncaoRepository(entityManager);
+        this.setorRepository = new SetorRepository(entityManager);
+        this.historicoFuncaoRepository = new HistoricoFuncaoRepository(entityManager);
+        this.entityManager = entityManager;
     }
 
     public void cadastrarTrabalhador(TrabalhadorRequestRepresentation request, Usuario usuario) {
@@ -74,10 +76,11 @@ public class TrabalhadorService {
                 });
         trabalhador.getTrilhas().add(trilha);
         trilha.getTrabalhadores().add(trabalhador);
-
+        getBeginTransaction();
         trilhaRepository.update(trilha);
         trabalhadorRepository.update(trabalhador);
         this.LOG.info("Trilha adicionada com sucesso!");
+        commitAndCloseTransaction();
     }
 
     public void alterarFuncao(String funcao, String cpf, Usuario usuario) {
@@ -88,7 +91,7 @@ public class TrabalhadorService {
 
         Trabalhador trabalhador = buscaTrabalhador(cpf);
         verificaFuncao(funcao, trabalhador.getFuncao().getNomeFuncao());
-
+        getBeginTransaction();
         var funcaoBanco = funcaoRepository.findByName(funcao);
         if (funcaoBanco.isPresent()) {
             trabalhador.setFuncao(funcaoBanco.get());
@@ -113,6 +116,7 @@ public class TrabalhadorService {
 
         trabalhadorRepository.update(trabalhador);
         this.LOG.info("Funcao alterada com sucesso!");
+        commitAndCloseTransaction();
     }
 
     public void alterarEmpresa(String cpf, String cnpj) {
@@ -124,8 +128,10 @@ public class TrabalhadorService {
         Empresa empresa = empresaService.buscarEmpresa(cnpj);
 
         trabalhador.setIdEmpresa(empresa.getId());
+        getBeginTransaction();
         trabalhadorRepository.update(trabalhador);
         this.LOG.info("Empresa alterada com sucesso!");
+        commitAndCloseTransaction();
     }
 
     public Trabalhador buscaTrabalhador(String cpf) {
@@ -180,5 +186,15 @@ public class TrabalhadorService {
         this.LOG.info("CPF verificado com sucesso!");
     }
 
+    private void getBeginTransaction() {
+        this.LOG.info("Abrindo Transação com o banco de dados...");
+        entityManager.getTransaction().begin();
+    }
+
+    private void commitAndCloseTransaction() {
+        this.LOG.info("Commitando e Fechando transação com o banco de dados");
+        entityManager.getTransaction().commit();
+        entityManager.close();
+    }
 
 }

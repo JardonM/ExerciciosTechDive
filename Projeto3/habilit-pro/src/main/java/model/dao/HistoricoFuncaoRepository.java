@@ -16,4 +16,12 @@ public class HistoricoFuncaoRepository {
         return entityManager.merge(historicoFuncao);
     }
 
+    public HistoricoFuncao findById(Long id) {
+        return entityManager.find(HistoricoFuncao.class, id);
+    }
+
+    public void delete(HistoricoFuncao historicoFuncao) {
+        entityManager.remove(historicoFuncao);
+    }
+
 }

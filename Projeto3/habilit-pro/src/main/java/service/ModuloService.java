@@ -9,6 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import representation.request.ModuloRequestRepresentation;
 
+import javax.persistence.EntityManager;
 import java.time.OffsetDateTime;
 
 import static java.util.Objects.isNull;
@@ -21,13 +22,14 @@ public class ModuloService {
     private final TrilhaRepository trilhaRepository;
     private final TrabalhadorRepository trabalhadorRepository;
     private final AvaliacaoRepository avaliacaoRepository;
+    private EntityManager entityManager;
 
-    public ModuloService(ModuloRepository moduloRepository, TrilhaRepository trilhaRepository,
-                         TrabalhadorRepository trabalhadorRepository, AvaliacaoRepository avaliacaoRepository) {
-        this.moduloRepository = moduloRepository;
-        this.trilhaRepository = trilhaRepository;
-        this.trabalhadorRepository = trabalhadorRepository;
-        this.avaliacaoRepository = avaliacaoRepository;
+    public ModuloService(EntityManager entityManager) {
+        this.moduloRepository = new ModuloRepository(entityManager);
+        this.trilhaRepository = new TrilhaRepository(entityManager);
+        this.trabalhadorRepository = new TrabalhadorRepository(entityManager);
+        this.avaliacaoRepository = new AvaliacaoRepository(entityManager);
+        this.entityManager = entityManager;
     }
 
     public void cadastrarModulo(ModuloRequestRepresentation request, Usuario usuario) {
@@ -41,6 +43,7 @@ public class ModuloService {
         int diasPrazo = request.getDiasPrazo().isPresent() ? request.getDiasPrazo().get() : 10;
 
         this.LOG.info("Criando o modulo");
+        getBeginTransaction();
         moduloRepository.create(Modulo.builder()
                 .nome(request.getNome())
                 .trilha(request.getTrilha())
@@ -50,6 +53,7 @@ public class ModuloService {
                 .tarefaValidacao(request.getTarefaValidacao())
                 .build());
         this.LOG.info("Modulo criado com sucesso!");
+        commitAndCloseTransaction();
     }
 
     public void atualizarStatus(Long id, Status status, Usuario usuario) {
@@ -68,8 +72,10 @@ public class ModuloService {
             moduloEncontrado.setDataEncerramento(OffsetDateTime.now());
         }
         moduloEncontrado.setStatus(status);
+        getBeginTransaction();
         moduloRepository.update(moduloEncontrado);
         this.LOG.info("Modulo atualizado com sucesso!");
+        commitAndCloseTransaction();
     }
 
     public void avaliarTrabalhador(Long idModulo, Long idTrabalhador, Integer nota, Usuario usuario) {
@@ -92,10 +98,12 @@ public class ModuloService {
                 .trabalhador(trabalhadorEncontrado)
                 .nota(nota)
                 .build();
+        getBeginTransaction();
         trabalhadorEncontrado.getAvaliacoes().add(avaliacao);
         trabalhadorRepository.update(trabalhadorEncontrado);
         avaliacaoRepository.save(avaliacao);
         this.LOG.info("Trabalhador avaliado com sucesso!");
+        commitAndCloseTransaction();
     }
 
     private void validarModuloParaAvaliacao(Modulo modulo, Trabalhador trabalhador) {
@@ -114,6 +122,17 @@ public class ModuloService {
             this.LOG.error("Trabalhador não está inscrito neste modulo!");
             throw new RuntimeException("Trabalhador não está inscrito neste modulo!");
         }
+    }
+
+    private void getBeginTransaction() {
+        this.LOG.info("Abrindo Transação com o banco de dados...");
+        entityManager.getTransaction().begin();
+    }
+
+    private void commitAndCloseTransaction() {
+        this.LOG.info("Commitando e Fechando transação com o banco de dados");
+        entityManager.getTransaction().commit();
+        entityManager.close();
     }
 
 }

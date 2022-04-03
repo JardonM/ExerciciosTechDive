@@ -18,7 +18,7 @@ public class FuncaoRepository {
     }
 
     public Optional<Funcao> findByName(String nomeFuncao) {
-        return (Optional<Funcao>) entityManager.createNativeQuery("SELECT * from Funcao f where f.nome = :nomeFuncao", Funcao.class)
+        return (Optional<Funcao>) entityManager.createNativeQuery("SELECT f from Funcao f where f.nome = :nomeFuncao", Funcao.class)
                 .setParameter("nomeFuncao", nomeFuncao)
                 .getSingleResult();
     }

@@ -32,7 +32,7 @@ public class TrabalhadorRepository {
     }
 
     public Optional<Trabalhador> findByCpf(String cpf) {
-        String sql = "SELECT * FROM Trabalhador WHERE cpf =:cpf";
+        String sql = "SELECT t FROM Trabalhador t WHERE t.cpf =:cpf";
         return (Optional<Trabalhador>) this.entityManager.createNativeQuery(sql, Trabalhador.class)
                 .setParameter("cpf", cpf)
                 .getSingleResult();

@@ -31,21 +31,21 @@ public class EmpresaRepository {
     }
 
     public Optional<Empresa> findByCnpj(String cnpj) {
-        String sql = "SELECT Empresa FROM Empresa WHERE cnpj = :cnpj";
+        String sql = "SELECT e FROM Empresa e WHERE e.cnpj = :cnpj";
         return Optional.ofNullable(this.entityManager.createQuery(sql, Empresa.class)
                 .setParameter("cnpj", cnpj)
                 .getSingleResult());
     }
 
     public boolean existsByCnpj(String cnpj) {
-        String sql = "SELECT count(Empresa) FROM Empresa WHERE cnpj = :cnpj";
+        String sql = "SELECT count(e) FROM Empresa e WHERE cnpj = :cnpj";
         return this.entityManager.createQuery(sql, Long.class)
                 .setParameter("cnpj", cnpj)
                 .getSingleResult() > 0;
     }
 
     public List<Empresa> findAll() {
-        return this.entityManager.createQuery("select Empresa from Empresa", Empresa.class).getResultList();
+        return this.entityManager.createQuery("select e from Empresa e", Empresa.class).getResultList();
     }
 
     private Empresa convertToMerge(Empresa empresa) {

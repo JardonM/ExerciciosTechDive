@@ -7,9 +7,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import representation.request.UsuarioRequestRepresentation;
 
+import javax.persistence.EntityManager;
 import java.util.List;
-
-import static java.util.Objects.isNull;
 
 public class UsuarioService {
 
@@ -17,9 +16,11 @@ public class UsuarioService {
     private static final String CPF_REGEX = "([0-9]{3}[.]?[0-9]{3}[.]?[0-9]{3}-[0-9]{2})";
     private final Logger LOG = LogManager.getLogger(UsuarioService.class);
     private final UsuarioRepository usuarioRepository;
+    private EntityManager entityManager;
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
-        this.usuarioRepository = usuarioRepository;
+    public UsuarioService(EntityManager entityManager) {
+        this.usuarioRepository = new UsuarioRepository(entityManager);
+        this.entityManager = entityManager;
     }
 
     public void cadastrarUsuario(UsuarioRequestRepresentation request) {
@@ -28,6 +29,7 @@ public class UsuarioService {
         verificaEmail(request.getEmail());
         verificaSenha(request.getSenha());
         this.LOG.info("Cadastrando usuário");
+        getBeginTransaction();
         usuarioRepository.create(Usuario.builder()
                 .cpf(request.getCpf())
                 .nome(request.getNome())
@@ -36,6 +38,7 @@ public class UsuarioService {
                 .perfisAcesso(request.getPerfisAcesso())
                 .build());
         this.LOG.info("Usuário cadastrado com sucesso!");
+        commitAndCloseTransaction();
     }
 
     public void alterarPerfisAcesso(String cpf, List<PerfilAcesso> perfisAcesso) {
@@ -43,10 +46,10 @@ public class UsuarioService {
         verificaCpf(cpf);
         this.LOG.info("Alterando perfis de acesso");
         Usuario usuario = usuarioRepository.findByCpf(cpf)
-                        .orElseThrow(() -> {
-                            this.LOG.error("Usuário não encontrado!");
-                            return new RuntimeException("Cpf não cadastrado!");
-                        });
+                .orElseThrow(() -> {
+                    this.LOG.error("Usuário não encontrado!");
+                    return new RuntimeException("Cpf não cadastrado!");
+                });
 
         usuario.setPerfisAcesso(perfisAcesso);
         usuarioRepository.update(usuario);
@@ -95,5 +98,15 @@ public class UsuarioService {
         this.LOG.info("Senha válida!");
     }
 
+    private void getBeginTransaction() {
+        this.LOG.info("Abrindo Transação com o banco de dados...");
+        entityManager.getTransaction().begin();
+    }
+
+    private void commitAndCloseTransaction() {
+        this.LOG.info("Commitando e Fechando transação com o banco de dados");
+        entityManager.getTransaction().commit();
+        entityManager.close();
+    }
 
 }

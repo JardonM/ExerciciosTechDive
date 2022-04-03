@@ -23,21 +23,19 @@ public class Program {
         AvaliacaoRepository avaliacaoRepository = new AvaliacaoRepository(entityManager);
         HistoricoFuncaoRepository historicoFuncaoRepository = new HistoricoFuncaoRepository(entityManager);
         EmpresaService empresaService = new EmpresaService(entityManager);
-        ModuloService moduloService = new ModuloService(moduloRepository, trilhaRepository, trabalhadorRepository,
-                avaliacaoRepository);
-        TrabalhadorService trabalhadorService = new TrabalhadorService(trabalhadorRepository, empresaService,
-                trilhaRepository, funcaoRepository, setorRepository, historicoFuncaoRepository);
-        TrilhaService trilhaService = new TrilhaService(moduloRepository, empresaService, trilhaRepository);
-        UsuarioService usuarioService = new UsuarioService(usuarioRepository);
+        ModuloService moduloService = new ModuloService(entityManager);
+        TrabalhadorService trabalhadorService = new TrabalhadorService(entityManager);
+        TrilhaService trilhaService = new TrilhaService(entityManager);
+        UsuarioService usuarioService = new UsuarioService(entityManager);
 
 
         var usuario = UsuarioFixture.get().withRandomData().build();
         var empresaRequest = EmpresaRequestRepresentationFixture.get().withRandomData().build();
 //        empresaService.cadastrarEmpresa(empresaRequest, usuario);
-        var empresa = empresaService.buscarEmpresa(empresaRequest.getCnpj());
-        System.out.println(empresa);
+//        var empresa = empresaService.buscarEmpresa(empresaRequest.getCnpj());
+//        System.out.println(empresa);
 //        empresaService.deletarEmpresaPorCnpj(empresa.getCnpj());
-//        System.out.println(empresaService.buscarTodas());
+        System.out.println(empresaService.buscarTodas());
 
     }
 }

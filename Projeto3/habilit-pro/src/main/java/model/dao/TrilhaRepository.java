@@ -32,7 +32,7 @@ public class TrilhaRepository {
     }
 
     public Optional<Trilha> findByName(String nome) {
-        String sql = "SELECT * FROM Trilha WHERE nome =:nome";
+        String sql = "SELECT t FROM Trilha t WHERE t.nome =:nome";
         return (Optional<Trilha>) this.entityManager.createNativeQuery(sql, Trabalhador.class)
                 .setParameter("nome", nome)
                 .getSingleResult();
@@ -40,7 +40,7 @@ public class TrilhaRepository {
 
     @SuppressWarnings("unchecked")
     public List<Trilha> listAll() {
-        String sql = "SELECT * FROM Trilha";
+        String sql = "SELECT t FROM Trilha t";
         return this.entityManager.createNativeQuery(sql, Trilha.class)
                 .getResultList();
     }

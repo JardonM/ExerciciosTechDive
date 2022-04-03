@@ -30,7 +30,7 @@ public class UsuarioRepository {
     }
 
     public Optional<Usuario> findByCpf(String cpf) {
-        String sql = "SELECT * FROM Usuario WHERE cpf =:cpf";
+        String sql = "SELECT u FROM Usuario u WHERE u.cpf =:cpf";
         return (Optional<Usuario>) this.entityManager.createNativeQuery(sql, Usuario.class)
                 .setParameter("cpf", cpf)
                 .getSingleResult();

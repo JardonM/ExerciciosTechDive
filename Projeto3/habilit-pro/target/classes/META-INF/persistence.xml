@@ -4,10 +4,10 @@
              xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
     <persistence-unit name="habilit-pro"
                       transaction-type="RESOURCE_LOCAL">
-        <class>model.entities.HistoricoFuncao</class>
-        <class>model.entities.Setor</class>
-        <class>model.entities.Funcao</class>
-        <class>model.entities.Avaliacao</class>
+<!--        <class>model.entities.HistoricoFuncao</class>-->
+<!--        <class>model.entities.Setor</class>-->
+<!--        <class>model.entities.Funcao</class>-->
+<!--        <class>model.entities.Avaliacao</class>-->
         <properties>
             <property name="javax.persistence.jdbc.driver"
                       value="org.postgresql.Driver"/>

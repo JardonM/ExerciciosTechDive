@@ -101,9 +101,7 @@ public class EmpresaService {
     @Transactional
     public List<Empresa> buscarTodas() {
         this.LOG.info("Buscando todas as empresas");
-        getBeginTransaction();
         var empresas = empresaRepository.findAll();
-        commitAndCloseTransaction();
         this.LOG.info("Empresas buscadas com sucesso!");
         return empresas;
     }

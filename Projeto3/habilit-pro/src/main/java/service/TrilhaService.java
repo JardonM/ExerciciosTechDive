@@ -9,6 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import representation.request.TrilhaRequestRepresentation;
 
+import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,11 +23,13 @@ public class TrilhaService {
     private final ModuloRepository moduloRepository;
     private final EmpresaService empresaService;
     private final TrilhaRepository trilhaRepository;
+    private EntityManager entityManager;
 
-    public TrilhaService(ModuloRepository moduloRepository, EmpresaService empresaService, TrilhaRepository trilhaRepository) {
-        this.moduloRepository = moduloRepository;
-        this.empresaService = empresaService;
-        this.trilhaRepository = trilhaRepository;
+    public TrilhaService(EntityManager entityManager) {
+        this.moduloRepository = new ModuloRepository(entityManager);
+        this.empresaService = new EmpresaService(entityManager);
+        this.trilhaRepository = new TrilhaRepository(entityManager);
+        this.entityManager = entityManager;
     }
 
     public void cadastrarTrilha(TrilhaRequestRepresentation request, Usuario usuario) {
@@ -46,6 +49,8 @@ public class TrilhaService {
         String apelidoTrilha = request.getOcupacao() + contadorTrilha;
         this.LOG.info("Criando trilha...");
 
+        getBeginTransaction();
+
         trilhaRepository.create(Trilha.builder()
                 .nome(nomeTrilha)
                 .apelido(apelidoTrilha)
@@ -55,6 +60,7 @@ public class TrilhaService {
                 .modulos(new ArrayList<>())
                 .build());
         this.LOG.info("Trilha cadastrada com sucesso!");
+        commitAndCloseTransaction();
     }
 
     private void verificaOcupacao(TrilhaRequestRepresentation request) {
@@ -77,8 +83,10 @@ public class TrilhaService {
             throw new RuntimeException("A nota de satisfação deve ser de 1 a 5!");
         }
         trilhaEncontrada.setNotaSatisfacao(satisfacao);
+        getBeginTransaction();
         trilhaRepository.update(trilhaEncontrada);
         this.LOG.info("Nota de satisfação da trilha cadastrada com sucesso!");
+        commitAndCloseTransaction();
     }
 
     public void adicionarModulo(String nomeTrilha, Long idModulo, Usuario usuario) {
@@ -91,10 +99,11 @@ public class TrilhaService {
         }
 
         Trilha trilha = buscarTrilha(nomeTrilha);
-
+        getBeginTransaction();
         trilha.getModulos().add(modulo);
         trilhaRepository.update(trilha);
         this.LOG.info("Modulo adicionado com sucesso!");
+        commitAndCloseTransaction();
     }
 
     public Trilha buscarTrilha(String nomeTrilha) {
@@ -105,4 +114,14 @@ public class TrilhaService {
         });
     }
 
+    private void getBeginTransaction() {
+        this.LOG.info("Abrindo Transação com o banco de dados...");
+        entityManager.getTransaction().begin();
+    }
+
+    private void commitAndCloseTransaction() {
+        this.LOG.info("Commitando e Fechando transação com o banco de dados");
+        entityManager.getTransaction().commit();
+        entityManager.close();
+    }
 }
